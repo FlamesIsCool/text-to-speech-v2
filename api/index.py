@@ -1,11 +1,12 @@
 import os
 import io
 import logging
+import traceback
 from flask import Flask, request, send_file, jsonify, render_template_string
 from gtts import gTTS
 from serverless_wsgi import handle_request
 
-# Enable debugging logs (these will show in your Vercel logs)
+# Set up debugging logs (these appear in Vercel logs)
 logging.basicConfig(level=logging.DEBUG)
 
 # Embedded index.html content
@@ -357,7 +358,7 @@ def index():
     try:
         return render_template_string(index_html)
     except Exception as e:
-        logging.error("Error rendering index.html: %s", e)
+        logging.error("Error rendering index.html: %s", traceback.format_exc())
         return "Error rendering index.html", 500
 
 @app.route('/convert', methods=['POST'])
@@ -373,7 +374,7 @@ def convert_audio():
         mp3_fp.seek(0)
         return send_file(mp3_fp, mimetype="audio/mpeg")
     except Exception as e:
-        logging.error("Error in convert_audio: %s", e)
+        logging.error("Error in convert_audio: %s", traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
 @app.route('/save-audio', methods=['POST'])
@@ -389,7 +390,7 @@ def save_audio():
         mp3_fp.seek(0)
         return send_file(mp3_fp, mimetype="audio/mpeg", as_attachment=True, download_name="output.mp3")
     except Exception as e:
-        logging.error("Error in save_audio: %s", e)
+        logging.error("Error in save_audio: %s", traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
 # Vercel's entry point using serverless-wsgi
@@ -397,5 +398,5 @@ def handler(event, context):
     return handle_request(app, event, context)
 
 if __name__ == '__main__':
-    # For local development run
+    # For local testing
     app.run(debug=True)
